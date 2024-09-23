@@ -9,6 +9,8 @@ interface TaskListProps {
   sortBy: SortOption;
   sortDirection: SortDirection;
   limitBy?: number;
+  categoryFilter: string | null;
+  priorityFilter: Task["priority"] | null;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
@@ -16,14 +18,17 @@ export const TaskList: React.FC<TaskListProps> = ({
   sortBy,
   sortDirection,
   limitBy,
+  categoryFilter,
+  priorityFilter,
 }) => {
-  const { tasks, toggleTaskCompletion, deleteTask } = useTasks();
+  const { tasks, toggleTaskCompletion, deleteTask, updateTask } = useTasks();
   const { applyFiltersAndSort } = useFilters();
 
   const filteredAndSortedTasks = applyFiltersAndSort(
     tasks,
     filterBy,
-    undefined,
+    categoryFilter,
+    priorityFilter,
     sortBy,
     sortDirection
   );
@@ -39,6 +44,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           task={task}
           onToggle={toggleTaskCompletion}
           onDelete={deleteTask}
+          onEdit={updateTask}
         />
       ))}
     </ul>

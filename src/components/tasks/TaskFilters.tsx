@@ -7,7 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { FilterOption, SortOption, SortDirection } from "@/types";
+import { useCategories } from "@/hooks/useCategories";
+import type { FilterOption, SortOption, SortDirection, Task } from "@/types";
 
 interface TaskFiltersProps {
   filterBy: FilterOption;
@@ -16,6 +17,10 @@ interface TaskFiltersProps {
   onFilterChange: (filter: FilterOption) => void;
   onSortChange: (sort: SortOption) => void;
   onSortDirectionChange: (direction: SortDirection) => void;
+  categoryFilter: string | null;
+  onCategoryFilterChange: (category: string | null) => void;
+  priorityFilter: Task["priority"] | null;
+  onPriorityFilterChange: (priority: Task["priority"] | null) => void;
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -25,57 +30,123 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   onFilterChange,
   onSortChange,
   onSortDirectionChange,
+  categoryFilter,
+  onCategoryFilterChange,
+  priorityFilter,
+  onPriorityFilterChange,
 }) => {
+  const { categories } = useCategories();
+
+  const handleCategoryFilterChange = (value: string) => {
+    onCategoryFilterChange(value === "all" ? null : value);
+  };
+
+  const handlePriorityFilterChange = (value: string) => {
+    onPriorityFilterChange(
+      value === "all" ? null : (value as Task["priority"])
+    );
+  };
+
   return (
     <div className="flex space-x-4 mb-8 gap-4">
-      <div className="w-full">
-        <Label htmlFor="filter-select">Filter by</Label>
-        <Select
-          value={filterBy}
-          onValueChange={onFilterChange}>
-          <SelectTrigger id="filter-select">
-            <SelectValue placeholder="Select a filter" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-            <SelectItem value="dueDate">Due Date</SelectItem>
-            <SelectItem value="priority">Priority</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="w-full">
-        <Label htmlFor="sort-select">Sort by</Label>
-        <Select
-          value={sortBy}
-          onValueChange={onSortChange}>
-          <SelectTrigger id="sort-select">
-            <SelectValue placeholder="Select a sort" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="dueDate">Due Date</SelectItem>
-            <SelectItem value="priority">Priority</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-            <SelectItem value="name">Name</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="w-full">
-        <Label htmlFor="sort-direction-select">Sort Direction</Label>
-        <Select
-          value={sortDirection}
-          onValueChange={onSortDirectionChange}>
-          <SelectTrigger id="sort-direction-select">
-            <SelectValue placeholder="Select a sort direction" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterSelect
+        label="Filter by"
+        value={filterBy}
+        onValueChange={(value) => onFilterChange(value as FilterOption)}
+        options={[
+          { value: "all", label: "All" },
+          { value: "completed", label: "Completed" },
+          { value: "pending", label: "Pending" },
+          { value: "category", label: "Category" },
+          { value: "dueDate", label: "Due Date" },
+          { value: "priority", label: "Priority" },
+        ]}
+      />
+
+      {filterBy === "category" && (
+        <FilterSelect
+          label="Select Category"
+          value={categoryFilter ?? "all"}
+          onValueChange={handleCategoryFilterChange}
+          options={[
+            { value: "all", label: "All Categories" },
+            ...categories.map((category) => ({
+              value: category.name,
+              label: category.name,
+            })),
+          ]}
+        />
+      )}
+
+      {filterBy === "priority" && (
+        <FilterSelect
+          label="Select Priority"
+          value={priorityFilter ?? "all"}
+          onValueChange={handlePriorityFilterChange}
+          options={[
+            { value: "all", label: "All Priorities" },
+            { value: "low", label: "Low" },
+            { value: "medium", label: "Medium" },
+            { value: "high", label: "High" },
+          ]}
+        />
+      )}
+
+      <FilterSelect
+        label="Sort by"
+        value={sortBy}
+        onValueChange={(value) => onSortChange(value as SortOption)}
+        options={[
+          { value: "dueDate", label: "Due Date" },
+          { value: "priority", label: "Priority" },
+          { value: "category", label: "Category" },
+          { value: "name", label: "Name" },
+        ]}
+      />
+
+      <FilterSelect
+        label="Sort Direction"
+        value={sortDirection}
+        onValueChange={(value) => onSortDirectionChange(value as SortDirection)}
+        options={[
+          { value: "asc", label: "Ascending" },
+          { value: "desc", label: "Descending" },
+        ]}
+      />
     </div>
   );
 };
+
+interface FilterSelectProps {
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  options: { value: string; label: string }[];
+}
+
+const FilterSelect: React.FC<FilterSelectProps> = ({
+  label,
+  value,
+  onValueChange,
+  options,
+}) => (
+  <div className="w-full">
+    <Label htmlFor={`${label.toLowerCase()}-select`}>{label}</Label>
+    <Select
+      value={value}
+      onValueChange={onValueChange}>
+      <SelectTrigger id={`${label.toLowerCase()}-select`}>
+        <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
