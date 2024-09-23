@@ -35,7 +35,9 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
-  onSubmit: (taskData: Omit<Task, "id" | "completed">) => void;
+  onSubmit: (
+    taskData: Omit<Task, "id" | "completed" | "dateCompleted">
+  ) => void;
   initialValues?: TaskFormData;
   onCancel?: () => void;
 }

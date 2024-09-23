@@ -15,7 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import type { FilterOption, SortOption, SortDirection, Task } from "@/types";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 export const Dashboard: React.FC = () => {
   const { tasks, addTask } = useTasks();
@@ -30,6 +37,7 @@ export const Dashboard: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = React.useState<
     Task["priority"] | null
   >(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleAddTask = (
     taskData: Omit<Task, "id" | "completed" | "dateCompleted">
@@ -37,6 +45,13 @@ export const Dashboard: React.FC = () => {
     addTask(taskData);
     setIsAddingTask(false);
   };
+
+  const renderAddTaskForm = () => (
+    <TaskForm
+      onSubmit={handleAddTask}
+      onCancel={() => setIsAddingTask(false)}
+    />
+  );
 
   return (
     <div className="space-y-6">
@@ -76,7 +91,9 @@ export const Dashboard: React.FC = () => {
             tasks.filter(
               (t) =>
                 t.completed &&
-                new Date(t.dueDate).toDateString() === new Date().toDateString()
+                t.dateCompleted &&
+                new Date(t.dateCompleted).toDateString() ===
+                  new Date().toDateString()
             ).length
           }
         />
@@ -108,19 +125,29 @@ export const Dashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Dialog
-        open={isAddingTask}
-        onOpenChange={setIsAddingTask}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Task</DialogTitle>
-          </DialogHeader>
-          <TaskForm
-            onSubmit={handleAddTask}
-            onCancel={() => setIsAddingTask(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {isMobile ? (
+        <Drawer
+          open={isAddingTask}
+          onOpenChange={setIsAddingTask}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Add New Task</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-4">{renderAddTaskForm()}</div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog
+          open={isAddingTask}
+          onOpenChange={setIsAddingTask}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Task</DialogTitle>
+            </DialogHeader>
+            {renderAddTaskForm()}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

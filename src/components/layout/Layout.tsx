@@ -8,7 +8,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="container mx-auto p-4 max-w-6xl my-10">
-      <Header title="My Task Manager" />
+      <Header title="ZenTask" />
       <main>{children}</main>
     </div>
   );
