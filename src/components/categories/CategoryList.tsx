@@ -11,9 +11,8 @@ export const CategoryList: React.FC = () => {
     useCategories();
   const [isAdding, setIsAdding] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
   const handleAddCategory = (name: string) => {
-    addCategory({ name, id: Date.now().toString() });
+    addCategory(name);
     setIsAdding(false);
   };
 
