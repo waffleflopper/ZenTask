@@ -38,7 +38,48 @@ const TaskItem: React.FC<TaskItemProps> = ({
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleEdit = (updatedTask: Task) => {
-    onEdit(updatedTask);
+    const changes: Partial<Omit<Task, "id">> = {};
+
+    (Object.keys(updatedTask) as Array<keyof Task>).forEach((key) => {
+      if (key !== "id" && updatedTask[key] !== task[key]) {
+        switch (key) {
+          case "title":
+          case "details":
+          case "category":
+            if (typeof updatedTask[key] === "string") {
+              changes[key] = updatedTask[key];
+            }
+            break;
+          case "dueDate":
+            if (updatedTask[key] instanceof Date) {
+              changes[key] = updatedTask[key];
+            }
+            break;
+          case "priority":
+            if (
+              typeof updatedTask[key] === "string" &&
+              ["low", "medium", "high"].includes(updatedTask[key] as string)
+            ) {
+              changes[key] = updatedTask[key] as "low" | "medium" | "high";
+            }
+            break;
+          case "completed":
+            if (typeof updatedTask[key] === "boolean") {
+              changes[key] = updatedTask[key];
+            }
+            break;
+          case "dateCompleted":
+            if (updatedTask[key] instanceof Date || updatedTask[key] === null) {
+              changes[key] = updatedTask[key];
+            }
+            break;
+        }
+      }
+    });
+
+    if (Object.keys(changes).length > 0) {
+      onEdit({ ...task, ...changes });
+    }
     setIsOpen(false);
   };
 

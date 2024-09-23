@@ -7,19 +7,37 @@ import {
   query,
   where,
   getDocs,
+  Timestamp,
 } from "firebase/firestore";
-import { db } from "@/firebase/firebase";
-import { Task } from "@/types";
+import { db } from "./firebase";
+import { FirestoreTask, Task } from "@/types";
 
-export const addTask = async (userId: string, task: Omit<Task, "id">) => {
-  const taskCollection = collection(db, "tasks");
-  const docRef = await addDoc(taskCollection, { ...task, userId });
-  return { ...task, id: docRef.id };
+export const addTask = async (
+  userId: string,
+  task: Omit<Task, "id">
+): Promise<FirestoreTask> => {
+  const tasksCollection = collection(db, "tasks");
+  const docRef = await addDoc(tasksCollection, {
+    ...task,
+    userId,
+    dueDate: Timestamp.fromDate(task.dueDate),
+    dateCompleted: task.dateCompleted
+      ? Timestamp.fromDate(task.dateCompleted)
+      : null,
+  });
+  return { ...task, id: docRef.id } as FirestoreTask;
 };
 
 export const updateTask = async (taskId: string, updates: Partial<Task>) => {
   const taskRef = doc(db, "tasks", taskId);
-  await updateDoc(taskRef, updates);
+  const updatesToSend = {
+    ...updates,
+    dueDate: updates.dueDate ? Timestamp.fromDate(updates.dueDate) : undefined,
+    dateCompleted: updates.dateCompleted
+      ? Timestamp.fromDate(updates.dateCompleted)
+      : null,
+  };
+  await updateDoc(taskRef, updatesToSend);
 };
 
 export const deleteTask = async (taskId: string) => {
@@ -27,11 +45,17 @@ export const deleteTask = async (taskId: string) => {
   await deleteDoc(taskRef);
 };
 
-export const getTasks = async (userId: string) => {
-  const taskCollection = collection(db, "tasks");
-  const q = query(taskCollection, where("userId", "==", userId));
+export const getTasks = async (userId: string): Promise<Task[]> => {
+  const tasksCollection = collection(db, "tasks");
+  const q = query(tasksCollection, where("userId", "==", userId));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(
-    (doc) => ({ id: doc.id, ...doc.data() } as Task)
-  );
+  return querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      dueDate: data.dueDate.toDate(),
+      dateCompleted: data.dateCompleted ? data.dateCompleted.toDate() : null,
+    } as Task;
+  });
 };

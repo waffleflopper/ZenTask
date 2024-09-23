@@ -42,9 +42,9 @@ export const TaskList: React.FC<TaskListProps> = ({
         <TaskItem
           key={task.id}
           task={task}
-          onToggle={toggleTaskCompletion}
-          onDelete={deleteTask}
-          onEdit={updateTask}
+          onToggle={() => toggleTaskCompletion(task.id)}
+          onDelete={() => deleteTask(task.id)}
+          onEdit={(updates) => updateTask(task.id, updates)}
         />
       ))}
     </ul>
