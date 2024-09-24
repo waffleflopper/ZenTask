@@ -1,20 +1,27 @@
-import React, { createContext, useContext } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "@/firebase/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
-const AuthContext = createContext<ReturnType<typeof useAuth> | null>(null);
+const AuthContext = createContext<{ user: User | null }>({ user: null });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const auth = useAuth();
+  const [user, setUser] = useState<User | null>(null);
 
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+  );
 };
 
 export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuthContext must be used within an AuthProvider");
-  }
-  return context;
+  return useContext(AuthContext);
 };

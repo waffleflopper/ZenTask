@@ -105,20 +105,24 @@ export const addTaskAtom = atom(null, (get, set, newTask: Omit<Task, "id">) => {
   set(tasksAtom, [...tasks, task]);
 });
 
-export const updateTaskAtom = atom(null, (get, set, updatedTask: Task) => {
-  const tasks = get(tasksAtom);
-  const updatedTasks = tasks.map((task) =>
-    task.id === updatedTask.id
-      ? {
-          ...updatedTask,
-          dateCompleted: updatedTask.completed
-            ? updatedTask.dateCompleted || new Date()
-            : undefined,
-        }
-      : task
-  );
-  set(tasksAtom, updatedTasks);
-});
+export const updateTaskAtom = atom(
+  null,
+  (get, set, updatedTask: Partial<Task> & { id: string }) => {
+    const tasks = get(tasksAtom);
+    const updatedTasks = tasks.map((task) =>
+      task.id === updatedTask.id
+        ? {
+            ...task,
+            ...updatedTask,
+            dateCompleted: updatedTask.completed
+              ? updatedTask.dateCompleted || new Date()
+              : undefined,
+          }
+        : task
+    );
+    set(tasksAtom, updatedTasks);
+  }
+);
 
 export const deleteTaskAtom = atom(null, (get, set, taskId: string) => {
   const tasks = get(tasksAtom);

@@ -2,7 +2,7 @@ import React from "react";
 import TaskItem from "./TaskItem";
 import { useTasks } from "@/hooks/useTasks";
 import { useFilters } from "@/hooks/useFilters";
-import type { Task, FilterOption, SortOption, SortDirection } from "@/types";
+import type { FilterOption, SortOption, SortDirection, Task } from "@/types";
 
 interface TaskListProps {
   filterBy: FilterOption;

@@ -1,14 +1,17 @@
 import { Timestamp } from "firebase/firestore";
 
-export interface Task {
+export interface BaseTask {
   id: string;
   title: string;
   details?: string;
   category: string;
-  dueDate: Date;
   priority: "low" | "medium" | "high";
   completed: boolean;
-  dateCompleted?: Date | null;
+}
+
+export interface Task extends BaseTask {
+  dueDate: Date;
+  dateCompleted: Date | null;
 }
 
 export type ThemeMode = "light" | "dark" | "system";
@@ -34,7 +37,7 @@ export type FilterOption =
   | "priority"
   | "dueDate";
 
-export interface FirestoreTask extends Omit<Task, "dueDate" | "dateCompleted"> {
+export interface FirestoreTask extends BaseTask {
   dueDate: Date | Timestamp;
   dateCompleted: Date | Timestamp | null;
 }
